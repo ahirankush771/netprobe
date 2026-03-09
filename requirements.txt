@@ -1,0 +1,38 @@
+# NetProbe v2.0 - Requirements
+# Author: Ankush (cybersecurity)
+# Install: pip install -r requirements.txt
+#
+# Kali Linux : sudo pip3 install -r requirements.txt
+# Termux     : pip install -r requirements.txt
+
+# Core - Required
+scapy>=2.4.5
+requests>=2.28.0
+colorama>=0.4.6
+
+# UI & Display
+rich>=13.0.0
+
+# Web Dashboard
+flask>=2.3.0
+
+# Reporting
+reportlab>=4.0.0
+jinja2>=3.1.0
+
+# Network Info
+netifaces>=0.11.0
+
+# OSINT
+shodan>=1.28.0
+geoip2>=4.7.0
+
+# Telegram Alerts
+python-telegram-bot>=20.0
+
+# Network Visualization (optional - Kali only)
+networkx>=3.1
+matplotlib>=3.7.0
+
+# Port Scanning helper (optional)
+python-nmap>=0.7.1

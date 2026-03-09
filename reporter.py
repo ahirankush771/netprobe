@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""
+NetProbe - Report Generator
+Author: Ankush (cybersecurity)
+Generates HTML, PDF, and JSON reports
+"""
+import os, json
+from datetime import datetime
+
+class C:
+    RED="\033[91m"; GREEN="\033[92m"; YELLOW="\033[93m"; CYAN="\033[96m"
+    BOLD="\033[1m"; DIM="\033[2m"; RESET="\033[0m"
+
+class ReportGenerator:
+    def generate(self, devices, filename="report.html"):
+        ext = filename.split(".")[-1].lower()
+        os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else ".", exist_ok=True)
+
+        if ext == "html":
+            self._html_report(devices, filename)
+        elif ext == "pdf":
+            self._pdf_report(devices, filename)
+        elif ext in ("json", "csv"):
+            self._json_report(devices, filename)
+        else:
+            self._html_report(devices, filename)
+
+    def _html_report(self, devices, filename):
+        now  = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        rows = ""
+        for i, d in enumerate(devices, 1):
+            dtype = d.get("device_type", "❓ Unknown")
+            risk_class = "risk-high" if "Camera" in dtype else "risk-low"
+            rows += f"""
+            <tr>
+                <td>{i}</td>
+                <td><strong>{d.get('ip','N/A')}</strong></td>
+                <td><code>{d.get('mac','N/A')}</code></td>
+                <td>{d.get('vendor','Unknown')}</td>
+                <td>{dtype}</td>
+                <td>{d.get('hostname','Unknown')}</td>
+                <td><span class="badge {risk_class}">{d.get('confidence','?')}</span></td>
+            </tr>"""
+
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetProbe Report | by Ankush</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap');
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ background: #0a0f1e; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; padding: 30px; }}
+  .header {{ background: linear-gradient(135deg, #0d1b2a, #1a3a5c); border: 1px solid #00d4ff33;
+             border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center; }}
+  .header h1 {{ font-size: 2.5rem; color: #00d4ff; letter-spacing: 4px; text-transform: uppercase; }}
+  .header p  {{ color: #88aacc; margin-top: 8px; font-size: 1rem; }}
+  .author-badge {{ display: inline-block; background: #00d4ff22; border: 1px solid #00d4ff;
+                   color: #00d4ff; padding: 5px 15px; border-radius: 20px; margin-top: 10px; font-size: 0.9rem; }}
+  .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }}
+  .stat {{ background: #111827; border: 1px solid #1e3a5f; border-radius: 10px; padding: 20px; text-align: center; }}
+  .stat .num {{ font-size: 2.5rem; color: #00d4ff; font-weight: 700; }}
+  .stat .label {{ color: #88aacc; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }}
+  table {{ width: 100%; border-collapse: collapse; background: #0d1520; border-radius: 10px; overflow: hidden; }}
+  th {{ background: #0d2137; color: #00d4ff; padding: 14px 16px; text-align: left;
+        text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }}
+  td {{ padding: 12px 16px; border-bottom: 1px solid #1a2a3a; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }}
+  tr:hover td {{ background: #112033; }}
+  .badge {{ padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }}
+  .risk-high {{ background: #ff450033; color: #ff6644; border: 1px solid #ff4400; }}
+  .risk-low  {{ background: #00ff8833; color: #44ff99; border: 1px solid #00ff88; }}
+  .footer {{ text-align: center; margin-top: 30px; color: #445566; font-size: 0.85rem; }}
+  code {{ background: #1a2a3a; padding: 2px 6px; border-radius: 4px; color: #ffd700; font-size: 0.85rem; }}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>⚡ NetProbe</h1>
+  <p>WiFi Network Security Scan Report</p>
+  <div class="author-badge">👨‍💻 Ankush | cybersecurity Researcher</div><br>
+  <div class="author-badge">🕐 {now}</div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="num">{len(devices)}</div><div class="label">Devices Found</div></div>
+  <div class="stat"><div class="num">{len(set(d.get('device_type','?') for d in devices))}</div><div class="label">Device Types</div></div>
+  <div class="stat"><div class="num">{sum(1 for d in devices if d.get('confidence')=='High')}</div><div class="label">High Confidence</div></div>
+  <div class="stat"><div class="num">v2.0</div><div class="label">NetProbe</div></div>
+</div>
+<table>
+  <thead>
+    <tr><th>#</th><th>IP Address</th><th>MAC Address</th><th>Vendor</th><th>Device Type</th><th>Hostname</th><th>Confidence</th></tr>
+  </thead>
+  <tbody>{rows}</tbody>
+</table>
+<div class="footer">
+  <p>Generated by <strong>NetProbe v2.0</strong> | Author: <strong>Ankush (cybersecurity)</strong></p>
+  <p style="margin-top:5px;">⚠ For authorized use only. Stay ethical.</p>
+</div>
+</body>
+</html>"""
+
+        with open(filename, "w") as f:
+            f.write(html)
+        print(f"\n  {C.GREEN}[+] HTML report saved: {filename}{C.RESET}")
+        print(f"  {C.DIM}    Open in browser to view visual report{C.RESET}")
+
+    def _json_report(self, devices, filename):
+        data = {
+            "tool": "NetProbe v2.0",
+            "author": "Ankush (cybersecurity)",
+            "generated": datetime.now().isoformat(),
+            "total_devices": len(devices),
+            "devices": devices
+        }
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"\n  {C.GREEN}[+] JSON report saved: {filename}{C.RESET}")
+
+    def _pdf_report(self, devices, filename):
+        """Generate PDF via HTML → PDF conversion"""
+        html_temp = filename.replace(".pdf", "_temp.html")
+        self._html_report(devices, html_temp)
+        try:
+            import subprocess
+            result = subprocess.run(["wkhtmltopdf", html_temp, filename],
+                                    capture_output=True, text=True)
+            if result.returncode == 0:
+                os.remove(html_temp)
+                print(f"\n  {C.GREEN}[+] PDF report saved: {filename}{C.RESET}")
+            else:
+                print(f"\n  {C.YELLOW}[!] PDF generation failed. HTML saved instead: {html_temp}{C.RESET}")
+        except FileNotFoundError:
+            print(f"\n  {C.YELLOW}[!] wkhtmltopdf not installed. HTML report saved: {html_temp}{C.RESET}")
+            print(f"  {C.DIM}    Install: sudo apt install wkhtmltopdf (Kali) | pkg install wkhtmltopdf (Termux){C.RESET}")
+
+    def show_history(self):
+        history_file = "reports/scan_history.json"
+        if not os.path.exists(history_file):
+            print(f"\n  {C.YELLOW}[!] No scan history found. Run a scan first.{C.RESET}")
+            return
+        with open(history_file) as f:
+            history = json.load(f)
+
+        print(f"\n  {C.CYAN}{C.BOLD}[ Scan History — {len(history)} records ]{C.RESET}")
+        print(f"  {C.DIM}NetProbe by Ankush (cybersecurity){C.RESET}\n")
+        print(f"  {'#':<4} {'Timestamp':<22} {'Target':<20} {'Devices'}")
+        print(f"  {'─'*55}")
+        for i, h in enumerate(reversed(history[-20:]), 1):
+            print(f"  {C.DIM}{i:<4}{C.RESET} {C.WHITE}{h['timestamp']:<22}{C.RESET} {C.CYAN}{h['target']:<20}{C.RESET} {C.GREEN}{h['device_count']}{C.RESET}")
