@@ -21,7 +21,7 @@
 | **Name** | Ankush |
 | **Role** | cybersecurity Researcher & Tool Developer |
 | **Platform** | Kali Linux, Termux Android |
-| **GitHub** | [@Ankush-cyber](https://github.com/Ankush-cyber) |
+| **GitHub** | [@Ahirankush771](https://github.com/Ahirankush771) |
 
 ---
 
@@ -49,7 +49,7 @@
 ### 🐉 Kali Linux
 
 ```bash
-git clone https://github.com/Ankush-cyber/netprobe.git
+git clone https://github.com/Ahirankush771/netprobe.git
 cd netprobe
 sudo bash install.sh
 ```
@@ -58,7 +58,7 @@ sudo bash install.sh
 
 ```bash
 pkg update && pkg install git python
-git clone https://github.com/Ankush-cyber/netprobe.git
+git clone https://github.com/Ahirankush771/netprobe.git
 cd netprobe
 bash install.sh
 ```
